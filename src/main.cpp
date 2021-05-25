@@ -1,22 +1,6 @@
 #include <Arduino.h>
-#include "esp_camera.h"
 #include <WiFi.h>
-
-//
-// WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
-//            Ensure ESP32 Wrover Module or other board with PSRAM is selected
-//            Partial images will be transmitted if image exceeds buffer size
-//
-
-// Select camera model
-#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
-//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
-//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
-//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+#include "esp_camera.h"
 
 #include "camera_pins.h"
 
@@ -52,26 +36,9 @@ void setup()
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-
-  // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
-  //                      for larger pre-allocated frame buffer.
-  if (psramFound())
-  {
-    config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
-  }
-  else
-  {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
-  }
-
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
+  config.frame_size = FRAMESIZE_UXGA;
+  config.jpeg_quality = 10;
+  config.fb_count = 2;
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -82,20 +49,8 @@ void setup()
   }
 
   sensor_t *s = esp_camera_sensor_get();
-  // initial sensors are flipped vertically and colors are a bit saturated
-  if (s->id.PID == OV3660_PID)
-  {
-    s->set_vflip(s, 1);       // flip it back
-    s->set_brightness(s, 1);  // up the brightness just a bit
-    s->set_saturation(s, -2); // lower the saturation
-  }
   // drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
 
   WiFi.begin(ssid, password);
 
