@@ -1,11 +1,9 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include "esp_camera.h"
+#include "secrets.h"
 
 #include "camera_pins.h"
-
-const char *ssid = "*********";
-const char *password = "*********";
 
 void startCameraServer();
 
@@ -52,7 +50,7 @@ void setup()
   // drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
 
-  WiFi.begin(ssid, password);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED)
   {
