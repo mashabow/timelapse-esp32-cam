@@ -51,4 +51,10 @@ namespace mqtt
     setupMQTT();
   }
 
+  void publish(const char *payload)
+  {
+    String topic = String("data/") + THING_NAME;
+    mqttClient.publish(topic.c_str(), payload);
+  }
+
 }

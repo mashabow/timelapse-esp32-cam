@@ -51,8 +51,6 @@ void setup()
   // drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
 
-  startCameraServer();
-
   try
   {
     mqtt::connect();
@@ -62,6 +60,10 @@ void setup()
     Serial.printf(message);
     return;
   }
+
+  mqtt::publish("hogehoge");
+
+  startCameraServer();
 }
 
 void loop()
