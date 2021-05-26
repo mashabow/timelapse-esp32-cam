@@ -42,7 +42,7 @@ namespace mqtt
       Serial.println("Try again in 5 seconds");
       delay(5000);
     }
-    Serial.print("Connected.");
+    Serial.println("Connected.");
   }
 
   void connect()
@@ -51,10 +51,10 @@ namespace mqtt
     setupMQTT();
   }
 
-  void publish(const char *payload)
+  void publish(const uint8_t *payload, unsigned int length)
   {
     String topic = String("data/") + THING_NAME;
-    mqttClient.publish(topic.c_str(), payload);
+    mqttClient.publish(topic.c_str(), payload, length);
   }
 
 }

@@ -1,5 +1,5 @@
 namespace mqtt
 {
   void connect();
-  void publish(const char *payload);
+  void publish(const uint8_t *payload, unsigned int length);
 }

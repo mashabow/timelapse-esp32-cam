@@ -39,28 +39,26 @@ void setup()
       .fb_count = 2};
 
   // camera init
-  esp_err_t err = esp_camera_init(&cameraConfig);
+  const auto err = esp_camera_init(&cameraConfig);
   if (err != ESP_OK)
   {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
 
-  sensor_t *s = esp_camera_sensor_get();
-  // drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
+  const auto *frameBuffer = esp_camera_fb_get();
 
   try
   {
     mqtt::connect();
+    Serial.println(frameBuffer->len);
+    mqtt::publish(frameBuffer->buf, frameBuffer->len);
   }
   catch (const char *message)
   {
-    Serial.printf(message);
+    Serial.println(message);
     return;
   }
-
-  mqtt::publish("hogehoge");
 }
 
 void loop()
