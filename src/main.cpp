@@ -1,11 +1,7 @@
 #include <Arduino.h>
-#include <WiFi.h>
-#include "esp_camera.h"
+#include <esp_camera.h>
 #include "mqtt.h"
-
 #include "camera_pins.h"
-
-void startCameraServer();
 
 void setup()
 {
@@ -65,8 +61,6 @@ void setup()
   }
 
   mqtt::publish("hogehoge");
-
-  startCameraServer();
 }
 
 void loop()
