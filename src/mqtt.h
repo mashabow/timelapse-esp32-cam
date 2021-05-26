@@ -1,0 +1,4 @@
+namespace mqtt
+{
+  void connect();
+}
