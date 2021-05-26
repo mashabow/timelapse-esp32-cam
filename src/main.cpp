@@ -13,6 +13,9 @@ void setup()
   Serial.setDebugOutput(true);
   Serial.println();
 
+  // NTP による時刻合わせ。MQTT over TLS に必要
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+
   camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
       .pin_reset = RESET_GPIO_NUM,
