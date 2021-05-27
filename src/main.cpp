@@ -1,8 +1,7 @@
 #include <Arduino.h>
-#include <WiFi.h>
 #include "esp_camera.h"
 #include "camera_pins.h"
-#include "secrets.h"
+#include "upload.h"
 
 void setup()
 {
@@ -44,15 +43,7 @@ void setup()
     return;
   }
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  upload();
 }
 
 void loop()
