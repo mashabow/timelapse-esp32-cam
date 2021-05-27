@@ -43,7 +43,8 @@ void setup()
     return;
   }
 
-  upload();
+  const auto *frameBuffer = esp_camera_fb_get();
+  upload(frameBuffer->buf, frameBuffer->len);
 }
 
 void loop()

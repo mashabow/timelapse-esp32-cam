@@ -42,7 +42,7 @@ void setupWiFi()
   Serial.println(WiFi.localIP());
 }
 
-void putImage()
+void putImage(uint8_t *buffer, size_t length)
 {
   WiFiClientSecure wiFiClient;
   wiFiClient.setCACert(ROOT_CA);
@@ -59,14 +59,20 @@ void putImage()
 
     https.addHeader("X-Api-Key", UPLOAD_API_KEY);
     https.addHeader("Content-Type", "image/jpeg");
-    int httpCode = https.PUT("hogehoge");
+
+    Serial.println("Uploading image... (" + String(length) + " bytes)");
+    const int code = https.PUT(buffer, length);
+    if (code < 0)
+    {
+      Serial.println("Failed to upload:  " + https.errorToString(code));
+    }
 
     https.end();
   }
 }
 
-void upload()
+void upload(uint8_t *buffer, size_t length)
 {
   setupWiFi();
-  putImage();
+  putImage(buffer, length);
 }
