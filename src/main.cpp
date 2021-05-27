@@ -35,6 +35,8 @@ void setup()
       .ledc_channel = LEDC_CHANNEL_0,
       .pixel_format = PIXFORMAT_JPEG,
       .frame_size = FRAMESIZE_UXGA,
+      // .frame_size = FRAMESIZE_96X96, → 1728 OK
+      // .frame_size = FRAMESIZE_QVGA, → 10784, 8985, 7282 NG
       .jpeg_quality = 10,
       .fb_count = 2};
 

@@ -53,8 +53,19 @@ namespace mqtt
 
   void publish(const uint8_t *payload, unsigned int length)
   {
+    boolean res = mqttClient.setBufferSize(200000);
+    mqttClient.setSocketTimeout(200);
+    mqttClient.setKeepAlive(200);
+    if (!res)
+    {
+      Serial.println("resize failed");
+    }
     String topic = String("data/") + THING_NAME;
-    mqttClient.publish(topic.c_str(), payload, length);
+    const boolean succeeded = mqttClient.publish(topic.c_str(), payload, length);
+    if (!succeeded)
+    {
+      Serial.println("publish failed: " + String(mqttClient.state()));
+    }
   }
 
 }
