@@ -1,11 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include "esp_camera.h"
-#include "secrets.h"
-
 #include "camera_pins.h"
-
-void startCameraServer();
+#include "secrets.h"
 
 void setup()
 {
@@ -47,10 +44,6 @@ void setup()
     return;
   }
 
-  sensor_t *s = esp_camera_sensor_get();
-  // drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
-
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED)
@@ -60,12 +53,6 @@ void setup()
   }
   Serial.println("");
   Serial.println("WiFi connected");
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
 }
 
 void loop()
