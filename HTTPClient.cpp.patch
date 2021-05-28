@@ -1,0 +1,16 @@
+--- /Users/mashabow/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src/HTTPClient.cpp.orig	2021-05-28 22:10:59.000000000 +0900
++++ /Users/mashabow/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src/HTTPClient.cpp	2021-05-28 22:57:02.000000000 +0900
+@@ -594,8 +594,12 @@
+
+         // send Payload if needed
+         if(payload && size > 0) {
+-            if(_client->write(&payload[0], size) != size) {
+-                return returnError(HTTPC_ERROR_SEND_PAYLOAD_FAILED);
++            const int chunkSize = 1000;
++            for (int pos = 0; pos < size; pos += chunkSize) {
++                const int actualChunkSize = std::min((int)size - pos, chunkSize);
++                if(_client->write(&payload[pos], actualChunkSize) != actualChunkSize) {
++                    return returnError(HTTPC_ERROR_SEND_PAYLOAD_FAILED);
++                }
+             }
+         }
