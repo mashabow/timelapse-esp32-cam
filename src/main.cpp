@@ -11,7 +11,7 @@ String getTimestamp()
   configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
   delay(1000); // NTP による現在時刻取得が完了するのを待つ
 
-  const time_t t = time(NULL);
+  const auto t = time(NULL);
   if (t < 1600000000) // 最近の時刻っぽい値にセットされたか確認
   {
     throw "Failed to sync current time";
@@ -30,7 +30,7 @@ void setup()
 
   setupWiFi();
 
-  camera_config_t cameraConfig = {
+  const camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
       .pin_reset = RESET_GPIO_NUM,
       .pin_xclk = XCLK_GPIO_NUM,
@@ -57,7 +57,7 @@ void setup()
       .fb_count = 2};
 
   // camera init
-  esp_err_t err = esp_camera_init(&cameraConfig);
+  const auto err = esp_camera_init(&cameraConfig);
   if (err != ESP_OK)
   {
     Serial.printf("Camera init failed with error 0x%x", err);
