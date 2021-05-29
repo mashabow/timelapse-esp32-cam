@@ -66,9 +66,8 @@ void setup()
   Serial.println();
 
   setupWiFi();
-
-  const auto image = getImage();
   const auto filename = getTimestamp() + ".jpeg";
+  const auto image = getImage();
   putImage(image->buf, image->len, filename);
 }
 
