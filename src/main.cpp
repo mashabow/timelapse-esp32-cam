@@ -3,6 +3,22 @@
 #include "camera_pins.h"
 #include "upload.h"
 
+String getTimestamp()
+{
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  delay(1000); // NTP による現在時刻取得が完了するのを待つ
+
+  const time_t t = time(NULL);
+  if (t < 1600000000) // 最近の時刻っぽい値にセットされたか確認
+  {
+    throw "Failed to sync current time";
+  }
+
+  char buffer[32];
+  strftime(buffer, sizeof(buffer), "%F %T", localtime(&t));
+  return String(buffer);
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -10,18 +26,8 @@ void setup()
   Serial.println();
 
   setupWiFi();
-
-  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
-  for (int i = 0; i < 10; i++)
-  {
-    time_t t = time(NULL);
-
-    char buffer[256];
-    strftime(buffer, sizeof(buffer), "%F %T", localtime(&t));
-    Serial.println(buffer);
-
-    delay(1000);
-  }
+  String timestamp = getTimestamp();
+  Serial.println(timestamp);
 
   camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
