@@ -42,7 +42,7 @@ void setupWiFi()
   Serial.println(WiFi.localIP());
 }
 
-void putImage(uint8_t *buffer, size_t length)
+void putImage(uint8_t *buffer, const size_t length, const String filename)
 {
   WiFiClientSecure wiFiClient;
   wiFiClient.setCACert(ROOT_CA);
@@ -51,8 +51,7 @@ void putImage(uint8_t *buffer, size_t length)
   {
     HTTPClient https;
 
-    const auto url = String(UPLOAD_URL) + "foo.jpeg";
-    if (!https.begin(wiFiClient, url))
+    if (!https.begin(wiFiClient, UPLOAD_URL + filename))
     {
       throw "Failed to connect to host";
     }
@@ -60,7 +59,7 @@ void putImage(uint8_t *buffer, size_t length)
     https.addHeader("X-Api-Key", UPLOAD_API_KEY);
     https.addHeader("Content-Type", "image/jpeg");
 
-    Serial.println("Uploading image... (" + String(length) + " bytes)");
+    Serial.println("Uploading " + filename + "... (" + String(length) + " bytes)");
     const int code = https.PUT(buffer, length);
     if (code < 0)
     {
@@ -73,10 +72,4 @@ void putImage(uint8_t *buffer, size_t length)
 
     https.end();
   }
-}
-
-void upload(uint8_t *buffer, size_t length)
-{
-  setupWiFi();
-  putImage(buffer, length);
 }

@@ -3,13 +3,34 @@
 #include "camera_pins.h"
 #include "upload.h"
 
+/**
+ * 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
+ */
+String getTimestamp()
+{
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  delay(1000); // NTP による現在時刻取得が完了するのを待つ
+
+  const auto t = time(NULL);
+  if (t < 1600000000) // 最近の時刻っぽい値にセットされたか確認
+  {
+    throw "Failed to sync current time";
+  }
+
+  char buffer[32];
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S", localtime(&t));
+  return String(buffer);
+}
+
 void setup()
 {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
 
-  camera_config_t cameraConfig = {
+  setupWiFi();
+
+  const camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
       .pin_reset = RESET_GPIO_NUM,
       .pin_xclk = XCLK_GPIO_NUM,
@@ -36,7 +57,7 @@ void setup()
       .fb_count = 2};
 
   // camera init
-  esp_err_t err = esp_camera_init(&cameraConfig);
+  const auto err = esp_camera_init(&cameraConfig);
   if (err != ESP_OK)
   {
     Serial.printf("Camera init failed with error 0x%x", err);
@@ -44,7 +65,8 @@ void setup()
   }
 
   const auto *frameBuffer = esp_camera_fb_get();
-  upload(frameBuffer->buf, frameBuffer->len);
+  const auto filename = getTimestamp() + ".jpeg";
+  putImage(frameBuffer->buf, frameBuffer->len, filename);
 }
 
 void loop()
