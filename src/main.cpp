@@ -48,6 +48,8 @@ const camera_fb_t *captureImage()
   sensor->set_hmirror(sensor, 1);
   sensor->set_dcw(sensor, 0);
 
+  // ホワイトバランスが安定するまで待ってから撮影。20秒ぐらいでもいけるかもしれない
+  delay(30000);
   return esp_camera_fb_get();
 }
 
@@ -76,8 +78,8 @@ void setup()
   Serial.setDebugOutput(true);
 
   setupWiFi();
-  const auto filename = getTimestamp() + ".jpeg";
   const auto image = captureImage();
+  const auto filename = getTimestamp() + ".jpeg";
   sendImage(image->buf, image->len, filename);
 }
 
