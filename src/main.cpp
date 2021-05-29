@@ -1,27 +1,27 @@
 #include <Arduino.h>
 #include "esp_camera.h"
-#include "camera_pins.h"
 #include "upload.h"
 
 const camera_fb_t *getImage()
 {
   const camera_config_t cameraConfig = {
-      .pin_pwdn = PWDN_GPIO_NUM,
-      .pin_reset = RESET_GPIO_NUM,
-      .pin_xclk = XCLK_GPIO_NUM,
-      .pin_sscb_sda = SIOD_GPIO_NUM,
-      .pin_sscb_scl = SIOC_GPIO_NUM,
-      .pin_d7 = Y9_GPIO_NUM,
-      .pin_d6 = Y8_GPIO_NUM,
-      .pin_d5 = Y7_GPIO_NUM,
-      .pin_d4 = Y6_GPIO_NUM,
-      .pin_d3 = Y5_GPIO_NUM,
-      .pin_d2 = Y4_GPIO_NUM,
-      .pin_d1 = Y3_GPIO_NUM,
-      .pin_d0 = Y2_GPIO_NUM,
-      .pin_vsync = VSYNC_GPIO_NUM,
-      .pin_href = HREF_GPIO_NUM,
-      .pin_pclk = PCLK_GPIO_NUM,
+      // https://github.com/espressif/esp32-camera/blob/7da9cb5ea320c5ebed1083431447c0e13eb8cc16/examples/take_picture.c#L67-L88
+      .pin_pwdn = 32,
+      .pin_reset = -1,
+      .pin_xclk = 0,
+      .pin_sscb_sda = 26,
+      .pin_sscb_scl = 27,
+      .pin_d7 = 35,
+      .pin_d6 = 34,
+      .pin_d5 = 39,
+      .pin_d4 = 36,
+      .pin_d3 = 21,
+      .pin_d2 = 19,
+      .pin_d1 = 18,
+      .pin_d0 = 5,
+      .pin_vsync = 25,
+      .pin_href = 23,
+      .pin_pclk = 22,
 
       .xclk_freq_hz = 20000000,
       .ledc_timer = LEDC_TIMER_0,
