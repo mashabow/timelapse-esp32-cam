@@ -39,37 +39,14 @@ const camera_fb_t *captureImage()
   {
     throw "Camera init failed with error 0x" + String(err, HEX);
   }
-  const auto s = esp_camera_sensor_get();
-  Serial.println("{");
-  Serial.printf("  framesize: %u,\n", s->status.framesize);
-  Serial.printf("  quality: %u,\n", s->status.quality);
-  Serial.printf("  brightness: %d,\n", s->status.brightness);
-  Serial.printf("  contrast: %d,\n", s->status.contrast);
-  Serial.printf("  saturation: %d,\n", s->status.saturation);
-  Serial.printf("  sharpness: %d,\n", s->status.sharpness);
-  Serial.printf("  special_effect: %u,\n", s->status.special_effect);
-  Serial.printf("  wb_mode: %u,\n", s->status.wb_mode);
-  Serial.printf("  awb: %u,\n", s->status.awb);
-  Serial.printf("  awb_gain: %u,\n", s->status.awb_gain);
-  Serial.printf("  aec: %u,\n", s->status.aec);
-  Serial.printf("  aec2: %u,\n", s->status.aec2);
-  Serial.printf("  ae_level: %d,\n", s->status.ae_level);
-  Serial.printf("  aec_value: %u,\n", s->status.aec_value);
-  Serial.printf("  agc: %u,\n", s->status.agc);
-  Serial.printf("  agc_gain: %u,\n", s->status.agc_gain);
-  Serial.printf("  gainceiling: %u,\n", s->status.gainceiling);
-  Serial.printf("  bpc: %u,\n", s->status.bpc);
-  Serial.printf("  wpc: %u,\n", s->status.wpc);
-  Serial.printf("  raw_gma: %u,\n", s->status.raw_gma);
-  Serial.printf("  lenc: %u,\n", s->status.lenc);
-  Serial.printf("  vflip: %u,\n", s->status.vflip);
-  Serial.printf("  hmirror: %u,\n", s->status.hmirror);
-  Serial.printf("  dcw: %u,\n", s->status.dcw);
-  Serial.printf("  colorbar: %u,\n", s->status.colorbar);
-  // GUI から操作できない
-  Serial.printf("  sharpness: %d,\n", s->status.sharpness);
-  Serial.printf("  denoise: %u,\n", s->status.denoise);
-  Serial.println("}");
+
+  // 各項目の意味についてはリンク先参照
+  // https://github.com/mashabow/timelapse-esp32-cam/issues/4#issuecomment-850776836
+  const auto sensor = esp_camera_sensor_get();
+  sensor->set_aec2(sensor, 1);
+  sensor->set_vflip(sensor, 1);
+  sensor->set_hmirror(sensor, 1);
+  sensor->set_dcw(sensor, 0);
 
   return esp_camera_fb_get();
 }
