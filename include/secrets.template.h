@@ -3,5 +3,5 @@
 constexpr char WIFI_SSID[] = "**********";
 constexpr char WIFI_PASSWORD[] = "**********";
 
-constexpr char UPLOAD_HOST[] = "**********.execute-api.{region}.amazonaws.com";
+constexpr char UPLOAD_URL[] = "https://**********.execute-api.**********.amazonaws.com/**********/images/";
 constexpr char UPLOAD_API_KEY[] = "**********";
