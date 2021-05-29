@@ -3,6 +3,9 @@
 #include "camera_pins.h"
 #include "upload.h"
 
+/**
+ * 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
+ */
 String getTimestamp()
 {
   configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
@@ -15,7 +18,7 @@ String getTimestamp()
   }
 
   char buffer[32];
-  strftime(buffer, sizeof(buffer), "%F %T", localtime(&t));
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S", localtime(&t));
   return String(buffer);
 }
 
@@ -26,8 +29,6 @@ void setup()
   Serial.println();
 
   setupWiFi();
-  String timestamp = getTimestamp();
-  Serial.println(timestamp);
 
   camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
@@ -64,7 +65,8 @@ void setup()
   }
 
   const auto *frameBuffer = esp_camera_fb_get();
-  putImage(frameBuffer->buf, frameBuffer->len);
+  const auto filename = getTimestamp() + ".jpeg";
+  putImage(frameBuffer->buf, frameBuffer->len, filename);
 }
 
 void loop()
