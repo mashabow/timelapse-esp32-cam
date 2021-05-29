@@ -15,10 +15,11 @@ void setup()
   for (int i = 0; i < 10; i++)
   {
     time_t t = time(NULL);
-    tm *tm = localtime(&t);
-    Serial.printf("%04d-%02d-%02d %02d:%02d:%02d\n",
-                  tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-                  tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+    char buffer[256];
+    strftime(buffer, sizeof(buffer), "%F %T", localtime(&t));
+    Serial.println(buffer);
+
     delay(1000);
   }
 
