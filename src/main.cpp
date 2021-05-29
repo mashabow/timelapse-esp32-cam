@@ -43,7 +43,7 @@ const camera_fb_t *getImage()
 /**
  * 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
  */
-String getTimestamp()
+const String getTimestamp()
 {
   configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
   delay(1000); // NTP による現在時刻取得が完了するのを待つ
