@@ -40,6 +40,16 @@ const camera_fb_t *captureImage()
     throw "Camera init failed with error 0x" + String(err, HEX);
   }
 
+  // 各項目の意味についてはリンク先参照
+  // https://github.com/mashabow/timelapse-esp32-cam/issues/4#issuecomment-850776836
+  const auto sensor = esp_camera_sensor_get();
+  sensor->set_aec2(sensor, 1);
+  sensor->set_vflip(sensor, 1);
+  sensor->set_hmirror(sensor, 1);
+  sensor->set_dcw(sensor, 0);
+
+  // ホワイトバランスが安定するまで待ってから撮影。20秒ぐらいでもいけるかもしれない
+  delay(30000);
   return esp_camera_fb_get();
 }
 
@@ -68,8 +78,8 @@ void setup()
   Serial.setDebugOutput(true);
 
   setupWiFi();
-  const auto filename = getTimestamp() + ".jpeg";
   const auto image = captureImage();
+  const auto filename = getTimestamp() + ".jpeg";
   sendImage(image->buf, image->len, filename);
 }
 
