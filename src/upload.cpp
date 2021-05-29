@@ -42,7 +42,7 @@ void setupWiFi()
   Serial.println(WiFi.localIP());
 }
 
-void putImage(uint8_t *buffer, const size_t length, const String filename)
+void sendImage(uint8_t *buffer, const size_t length, const String filename)
 {
   WiFiClientSecure wiFiClient;
   wiFiClient.setCACert(ROOT_CA);

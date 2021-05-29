@@ -2,7 +2,10 @@
 #include "esp_camera.h"
 #include "upload.h"
 
-const camera_fb_t *getImage()
+/**
+ * カメラを初期化し、撮影した画像のフレームバッファを取得する
+ */
+const camera_fb_t *captureImage()
 {
   const camera_config_t cameraConfig = {
       // https://github.com/espressif/esp32-camera/blob/7da9cb5ea320c5ebed1083431447c0e13eb8cc16/examples/take_picture.c#L67-L88
@@ -67,8 +70,8 @@ void setup()
 
   setupWiFi();
   const auto filename = getTimestamp() + ".jpeg";
-  const auto image = getImage();
-  putImage(image->buf, image->len, filename);
+  const auto image = captureImage();
+  sendImage(image->buf, image->len, filename);
 }
 
 void loop()
