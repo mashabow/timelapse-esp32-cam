@@ -1,1 +1,2 @@
-void upload(uint8_t *buffer, size_t length);
+void setupWiFi();
+void putImage(uint8_t *buffer, size_t length);

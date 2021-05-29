@@ -9,6 +9,19 @@ void setup()
   Serial.setDebugOutput(true);
   Serial.println();
 
+  setupWiFi();
+
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  for (int i = 0; i < 10; i++)
+  {
+    time_t t = time(NULL);
+    tm *tm = localtime(&t);
+    Serial.printf("%04d-%02d-%02d %02d:%02d:%02d\n",
+                  tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+                  tm->tm_hour, tm->tm_min, tm->tm_sec);
+    delay(1000);
+  }
+
   camera_config_t cameraConfig = {
       .pin_pwdn = PWDN_GPIO_NUM,
       .pin_reset = RESET_GPIO_NUM,
@@ -44,7 +57,7 @@ void setup()
   }
 
   const auto *frameBuffer = esp_camera_fb_get();
-  upload(frameBuffer->buf, frameBuffer->len);
+  putImage(frameBuffer->buf, frameBuffer->len);
 }
 
 void loop()

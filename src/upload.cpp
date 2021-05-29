@@ -74,9 +74,3 @@ void putImage(uint8_t *buffer, size_t length)
     https.end();
   }
 }
-
-void upload(uint8_t *buffer, size_t length)
-{
-  setupWiFi();
-  putImage(buffer, length);
-}
