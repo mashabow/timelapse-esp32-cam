@@ -2,6 +2,10 @@
 #include <esp_camera.h>
 #include "network.h"
 
+// 最後に撮影・送信に成功した際の、撮影時刻
+// deep sleep しても値は保持される
+RTC_DATA_ATTR time_t lastImageUnixTime = 0;
+
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
 {
@@ -85,10 +89,12 @@ void setup()
   {
     setupWiFi();
     syncTime();
+
     // TODO: 前回の撮影時刻と比較して、delay を入れる
     const auto image = captureImage();
     const auto imageUnixTime = getImageUnixTime(image);
     sendImage(image->buf, image->len, toFilename(imageUnixTime));
+    lastImageUnixTime = imageUnixTime;
   }
   catch (const String message)
   {
