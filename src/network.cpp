@@ -34,12 +34,28 @@ void setupWiFi()
   int retryCount = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    if (retryCount++ > 40)
+    if (retryCount++ > 20)
       throw "Failed to connect WiFi";
     delay(500);
   }
   Serial.print("Connected, IP address: ");
   Serial.println(WiFi.localIP());
+}
+
+void stopWiFi()
+{
+  WiFi.disconnect(true);
+}
+
+void syncTime()
+{
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  delay(1000); // NTP による現在時刻取得が完了するのを待つ
+
+  if (time(NULL) < 1600000000) // 最近の時刻っぽい値にセットされたか確認
+  {
+    throw "Failed to sync current time.";
+  }
 }
 
 void sendImage(uint8_t *buffer, const size_t length, const String filename)
@@ -59,17 +75,14 @@ void sendImage(uint8_t *buffer, const size_t length, const String filename)
     https.addHeader("X-Api-Key", UPLOAD_API_KEY);
     https.addHeader("Content-Type", "image/jpeg");
 
-    Serial.println("Uploading " + filename + "... (" + String(length) + " bytes)");
+    Serial.println("Uploading " + filename + "...");
     const int code = https.PUT(buffer, length);
+    https.end();
+
     if (code < 0)
     {
-      Serial.println("Failed to upload: " + https.errorToString(code));
+      throw "Failed to upload: " + https.errorToString(code);
     }
-    else
-    {
-      Serial.println("Uploaded.");
-    }
-
-    https.end();
+    Serial.println("Uploaded.");
   }
 }
