@@ -2,9 +2,16 @@
 #include <esp_camera.h>
 #include "upload.h"
 
-/**
- * カメラを初期化し、撮影した画像のフレームバッファを取得する
- */
+// deep sleep して終了。wake 時には setup から始まる
+void deepSleep()
+{
+  Serial.println("Start deep sleep mode.");
+  const int intervalMinutes = 10;
+  ESP.deepSleep(intervalMinutes * 60 * 1000 * 1000);
+  delay(1000); // deep sleep が始まるまで待つ
+}
+
+// カメラを初期化し、撮影した画像のフレームバッファを取得する
 const camera_fb_t *captureImage()
 {
   const camera_config_t cameraConfig = {
@@ -53,9 +60,7 @@ const camera_fb_t *captureImage()
   return esp_camera_fb_get();
 }
 
-/**
- * 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
- */
+// 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
 const String getTimestamp()
 {
   configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
@@ -82,10 +87,8 @@ void setup()
   const auto image = captureImage();
   const auto filename = getTimestamp() + ".jpeg";
   sendImage(image->buf, image->len, filename);
+
+  deepSleep();
 }
 
-void loop()
-{
-  // put your main code here, to run repeatedly:
-  delay(10000);
-}
+void loop() {}
