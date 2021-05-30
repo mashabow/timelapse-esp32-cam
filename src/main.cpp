@@ -9,7 +9,7 @@ const int CAMERA_WAIT = 30; // 20 ぐらいでもいけるかもしれない
 
 // 最後に撮影・送信に成功した際の、撮影時刻の Unix time [s]
 // deep sleep しても値は保持される
-RTC_DATA_ATTR time_t lastImageUnixTime = 0;
+RTC_DATA_ATTR time_t lastCapturedAt = 0;
 
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
@@ -69,12 +69,13 @@ void setupCamera()
   delay(CAMERA_WAIT * 1000);
 }
 
-const camera_fb_t *captureImage(const time_t lastImageUnixTime)
+// 撮影間隔がちょうど INTERVAL [s] になるように、delay を挟んで画像を撮影する
+const camera_fb_t *captureImage(const time_t lastCapturedAt)
 {
-  if (lastImageUnixTime)
+  if (lastCapturedAt)
   {
-    // 撮影間隔がちょうど INTERVAL [s] になるように、delay を挟む
-    const int wait = INTERVAL - (time(NULL) - lastImageUnixTime) % INTERVAL;
+    // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
+    const int wait = INTERVAL - (time(NULL) - lastCapturedAt) % INTERVAL;
     Serial.println("Waiting until the next capture time... (" + String(wait) + " seconds)");
     delay(wait * 1000);
   }
@@ -83,7 +84,7 @@ const camera_fb_t *captureImage(const time_t lastImageUnixTime)
 }
 
 // 撮影時刻を Unix time [s] で返す
-const time_t getImageUnixTime(const camera_fb_t *image)
+const time_t getCapturedAt(const camera_fb_t *image)
 {
   const auto deltaSec = millis() / 1000 - image->timestamp.tv_sec;
   return time(NULL) - deltaSec;
@@ -109,11 +110,11 @@ void setup()
     syncTime();
     setupCamera();
 
-    const auto image = captureImage(lastImageUnixTime);
-    const auto imageUnixTime = getImageUnixTime(image);
-    sendImage(image->buf, image->len, toFilename(imageUnixTime));
+    const auto image = captureImage(lastCapturedAt);
+    const auto capturedAt = getCapturedAt(image);
+    sendImage(image->buf, image->len, toFilename(capturedAt));
 
-    lastImageUnixTime = imageUnixTime;
+    lastCapturedAt = capturedAt;
   }
   catch (const String message)
   {
