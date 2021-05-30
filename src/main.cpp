@@ -5,7 +5,7 @@
 // 撮影間隔 [s]
 const int INTERVAL = 10 * 60;
 // カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [s]
-const int CAMERA_WAIT = 30; // 20 ぐらいでもいけるかもしれない
+const int CAMERA_WAIT = 20;
 
 // 最後に撮影・送信に成功した際の、撮影時刻の Unix time [s]
 // deep sleep しても値は保持される
