@@ -34,7 +34,7 @@ void setupWiFi()
   int retryCount = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    if (retryCount++ > 40)
+    if (retryCount++ > 20)
       throw "Failed to connect WiFi";
     delay(500);
   }
