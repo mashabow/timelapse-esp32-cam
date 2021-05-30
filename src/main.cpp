@@ -24,6 +24,8 @@ void deepSleep()
 // カメラを初期化する
 void setupCamera()
 {
+  Serial.println("Initializing camera...");
+
   const camera_config_t cameraConfig = {
       // https://github.com/espressif/esp32-camera/blob/7da9cb5ea320c5ebed1083431447c0e13eb8cc16/examples/take_picture.c#L67-L88
       .pin_pwdn = 32,
@@ -54,7 +56,7 @@ void setupCamera()
   const auto err = esp_camera_init(&cameraConfig);
   if (err != ESP_OK)
   {
-    throw "Camera init failed with error 0x" + String(err, HEX);
+    throw "Failed to initialize camera with error 0x" + String(err, HEX);
   }
 
   // 各項目の意味についてはリンク先参照
@@ -67,6 +69,8 @@ void setupCamera()
 
   // ホワイトバランスが安定するまで待つ
   delay(CAMERA_WAIT * 1000);
+
+  Serial.println("Initialized.");
 }
 
 // 撮影間隔がちょうど INTERVAL [s] になるように、delay を挟んで画像を撮影する
