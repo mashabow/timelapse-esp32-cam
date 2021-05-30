@@ -60,14 +60,18 @@ const camera_fb_t *captureImage()
   return esp_camera_fb_get();
 }
 
-// 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
-const String getTimestamp(time_t capturedTimeSinceBoot)
+// 撮影時刻を Unix time [s] で返す
+const time_t getImageUnixTime(const camera_fb_t *image)
 {
-  const auto deltaSec = millis() / 1000 - capturedTimeSinceBoot;
-  const time_t capturedTime = time(NULL) - deltaSec;
+  const auto deltaSec = millis() / 1000 - image->timestamp.tv_sec;
+  return time(NULL) - deltaSec;
+}
 
+// 2021-05-29T13-16-07.jpeg のような形式のファイル名を返す
+const String toFilename(time_t unixTime)
+{
   char buffer[32];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S", localtime(&capturedTime));
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S.jpeg", localtime(&unixTime));
   return String(buffer);
 }
 
@@ -83,8 +87,8 @@ void setup()
     syncTime();
     // TODO: 前回の撮影時刻と比較して、delay を入れる
     const auto image = captureImage();
-    const auto filename = getTimestamp(image->timestamp.tv_sec) + ".jpeg";
-    sendImage(image->buf, image->len, filename);
+    const auto imageUnixTime = getImageUnixTime(image);
+    sendImage(image->buf, image->len, toFilename(imageUnixTime));
   }
   catch (const String message)
   {
