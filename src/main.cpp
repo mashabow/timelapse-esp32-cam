@@ -84,7 +84,9 @@ const camera_fb_t *captureImage(const time_t lastCapturedAt)
     delay(wait * 1000);
   }
 
-  return esp_camera_fb_get();
+  const auto image = esp_camera_fb_get();
+  Serial.println("Captured! (" + String(image->len) + " bytes)");
+  return image;
 }
 
 // 撮影時刻を Unix time [s] で返す

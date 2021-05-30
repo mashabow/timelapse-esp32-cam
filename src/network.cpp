@@ -75,7 +75,7 @@ void sendImage(uint8_t *buffer, const size_t length, const String filename)
     https.addHeader("X-Api-Key", UPLOAD_API_KEY);
     https.addHeader("Content-Type", "image/jpeg");
 
-    Serial.println("Uploading " + filename + "... (" + String(length) + " bytes)");
+    Serial.println("Uploading " + filename + "...");
     const int code = https.PUT(buffer, length);
     https.end();
 
