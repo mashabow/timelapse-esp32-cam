@@ -47,6 +47,17 @@ void stopWiFi()
   WiFi.disconnect(true);
 }
 
+void syncTime()
+{
+  configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
+  delay(1000); // NTP による現在時刻取得が完了するのを待つ
+
+  if (time(NULL) < 1600000000) // 最近の時刻っぽい値にセットされたか確認
+  {
+    throw "Failed to sync current time.";
+  }
+}
+
 void sendImage(uint8_t *buffer, const size_t length, const String filename)
 {
   WiFiClientSecure wiFiClient;
