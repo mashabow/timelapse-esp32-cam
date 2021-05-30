@@ -83,10 +83,21 @@ void setup()
   Serial.setDebugOutput(true);
   Serial.println();
 
-  setupWiFi();
-  const auto image = captureImage();
-  const auto filename = getTimestamp() + ".jpeg";
-  sendImage(image->buf, image->len, filename);
+  try
+  {
+    setupWiFi();
+    const auto image = captureImage();
+    const auto filename = getTimestamp() + ".jpeg";
+    sendImage(image->buf, image->len, filename);
+  }
+  catch (const String message)
+  {
+    Serial.println(message);
+  }
+  catch (const char *message)
+  {
+    Serial.println(message);
+  }
 
   deepSleep();
 }
