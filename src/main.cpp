@@ -98,6 +98,7 @@ void setup()
   {
     Serial.println(message);
   }
+  stopWiFi();
 
   deepSleep();
 }

@@ -42,6 +42,11 @@ void setupWiFi()
   Serial.println(WiFi.localIP());
 }
 
+void stopWiFi()
+{
+  WiFi.disconnect(true);
+}
+
 void sendImage(uint8_t *buffer, const size_t length, const String filename)
 {
   WiFiClientSecure wiFiClient;
