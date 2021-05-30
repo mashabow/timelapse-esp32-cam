@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <esp_camera.h>
-#include "upload.h"
+#include "network.h"
 
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
