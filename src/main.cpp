@@ -61,19 +61,20 @@ const camera_fb_t *captureImage()
 }
 
 // 2021-05-29T13-16-07 のような形式のタイムスタンプ文字列を返す
-const String getTimestamp()
+const String getTimestamp(time_t capturedTimeSinceBoot)
 {
   configTzTime("JST-9", "ntp.nict.jp", "ntp.jst.mfeed.ad.jp");
   delay(1000); // NTP による現在時刻取得が完了するのを待つ
 
-  const auto t = time(NULL);
-  if (t < 1600000000) // 最近の時刻っぽい値にセットされたか確認
+  const auto deltaSec = millis() / 1000 - capturedTimeSinceBoot;
+  const time_t capturedTime = time(NULL) - deltaSec;
+  if (capturedTime < 1600000000) // 最近の時刻っぽい値にセットされたか確認
   {
     throw "Failed to sync current time";
   }
 
   char buffer[32];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S", localtime(&t));
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S", localtime(&capturedTime));
   return String(buffer);
 }
 
@@ -87,7 +88,7 @@ void setup()
   {
     setupWiFi();
     const auto image = captureImage();
-    const auto filename = getTimestamp() + ".jpeg";
+    const auto filename = getTimestamp(image->timestamp.tv_sec) + ".jpeg";
     sendImage(image->buf, image->len, filename);
   }
   catch (const String message)
