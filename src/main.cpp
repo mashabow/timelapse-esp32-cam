@@ -15,8 +15,8 @@ void deepSleep()
   delay(1000); // deep sleep が始まるまで待つ
 }
 
-// カメラを初期化し、撮影した画像のフレームバッファを取得する
-const camera_fb_t *captureImage()
+// カメラを初期化する
+void setupCamera()
 {
   const camera_config_t cameraConfig = {
       // https://github.com/espressif/esp32-camera/blob/7da9cb5ea320c5ebed1083431447c0e13eb8cc16/examples/take_picture.c#L67-L88
@@ -61,6 +61,10 @@ const camera_fb_t *captureImage()
 
   // ホワイトバランスが安定するまで待ってから撮影。20秒ぐらいでもいけるかもしれない
   delay(30000);
+}
+
+const camera_fb_t *captureImage()
+{
   return esp_camera_fb_get();
 }
 
@@ -90,6 +94,7 @@ void setup()
     setupWiFi();
     syncTime();
 
+    setupCamera();
     // TODO: 前回の撮影時刻と比較して、delay を入れる
     const auto image = captureImage();
     const auto imageUnixTime = getImageUnixTime(image);
