@@ -61,15 +61,12 @@ void sendImage(uint8_t *buffer, const size_t length, const String filename)
 
     Serial.println("Uploading " + filename + "... (" + String(length) + " bytes)");
     const int code = https.PUT(buffer, length);
+    https.end();
+
     if (code < 0)
     {
-      Serial.println("Failed to upload: " + https.errorToString(code));
+      throw "Failed to upload: " + https.errorToString(code);
     }
-    else
-    {
-      Serial.println("Uploaded.");
-    }
-
-    https.end();
+    Serial.println("Uploaded.");
   }
 }
