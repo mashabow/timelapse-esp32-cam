@@ -11,9 +11,17 @@ const int CAMERA_WAIT = 20;
 // deep sleep しても値は保持される
 RTC_DATA_ATTR time_t lastCapturedAt = 0;
 
+const int LED_BUILTIN = 4;
+
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
 {
+  // 内蔵 LED を完全にオフにする
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+  gpio_hold_en((gpio_num_t)LED_BUILTIN);
+  gpio_deep_sleep_hold_en();
+
   Serial.println("Enter deep sleep mode.");
   // WiFi 接続や送信処理などにかかる時間と、RTC の誤差を吸収するための余裕時間
   const int margin = 15; // [s]
