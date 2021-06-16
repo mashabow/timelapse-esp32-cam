@@ -2,16 +2,35 @@
 #include <esp_camera.h>
 #include "network.h"
 
-// 撮影間隔 [s]
-const int INTERVAL = 10 * 60;
-// カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [s]
-const int CAMERA_WAIT = 20;
+// 撮影間隔 [ms]
+const int INTERVAL = 10 * 60 * 1000;
+// カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [ms]
+const int CAMERA_WAIT = 20 * 1000;
 
-// 最後に撮影・送信に成功した際の、撮影時刻の Unix time [s]
+// 最後に撮影・送信に成功した際の、撮影時刻の Unix time [ms]
 // deep sleep しても値は保持される
-RTC_DATA_ATTR time_t lastCapturedAt = 0;
+RTC_DATA_ATTR long long lastCapturedAt = 0;
 
 const int LED_BUILTIN = 4;
+
+// 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟む
+// 戻り値は今回の撮影時刻
+const long long waitUntilNextCaptureTime(const long long lastCapturedAt)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  const auto now = tv.tv_sec * 1000LL + tv.tv_usec / 1000LL; // 現在の Unix time [ms]
+
+  if (!lastCapturedAt)
+    return now; // 初回起動時は待ち時間なし
+
+  // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
+  const auto nextCapturedAt = lastCapturedAt + ((now - lastCapturedAt) / INTERVAL + 1) * INTERVAL;
+  const int wait = nextCapturedAt - now;
+  Serial.println("Waiting until the next capture time... (" + String(wait) + " ms)");
+  delay(wait);
+  return nextCapturedAt;
+}
 
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
@@ -24,8 +43,8 @@ void deepSleep()
 
   Serial.println("Enter deep sleep mode.");
   // WiFi 接続や送信処理などにかかる時間と、RTC の誤差を吸収するための余裕時間
-  const int margin = 15; // [s]
-  ESP.deepSleep((INTERVAL - CAMERA_WAIT - margin) * 1000 * 1000);
+  const int margin = 15 * 1000; // [ms]
+  ESP.deepSleep((INTERVAL - CAMERA_WAIT - margin) * 1000);
   delay(1000); // deep sleep が始まるまで待つ
 }
 
@@ -76,39 +95,25 @@ void setupCamera()
   sensor->set_dcw(sensor, 0);
 
   // ホワイトバランスが安定するまで待つ
-  delay(CAMERA_WAIT * 1000);
+  delay(CAMERA_WAIT);
 
   Serial.println("Initialized.");
 }
 
-// 撮影間隔がちょうど INTERVAL [s] になるように、delay を挟んで画像を撮影する
-const camera_fb_t *captureImage(const time_t lastCapturedAt)
+// 画像を撮影する
+const camera_fb_t *captureImage()
 {
-  if (lastCapturedAt)
-  {
-    // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
-    const int wait = INTERVAL - (time(NULL) - lastCapturedAt) % INTERVAL;
-    Serial.println("Waiting until the next capture time... (" + String(wait) + " seconds)");
-    delay(wait * 1000);
-  }
-
   const auto image = esp_camera_fb_get();
   Serial.println("Captured! (" + String(image->len) + " bytes)");
   return image;
 }
 
-// 撮影時刻を Unix time [s] で返す
-const time_t getCapturedAt(const camera_fb_t *image)
-{
-  const auto deltaSec = millis() / 1000 - image->timestamp.tv_sec;
-  return time(NULL) - deltaSec;
-}
-
 // 2021-05-29T13-16-07.jpeg のような形式のファイル名を返す
-const String toFilename(time_t unixTime)
+const String toFilename(long long unixTimeMSec)
 {
+  const time_t unixTimeSec = unixTimeMSec / 1000;
   char buffer[32];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S.jpeg", localtime(&unixTime));
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S.jpeg", localtime(&unixTimeSec));
   return String(buffer);
 }
 
@@ -124,8 +129,8 @@ void setup()
     syncTime();
     setupCamera();
 
-    const auto image = captureImage(lastCapturedAt);
-    const auto capturedAt = getCapturedAt(image);
+    const auto capturedAt = waitUntilNextCaptureTime(lastCapturedAt);
+    const auto image = captureImage();
     sendImage(image->buf, image->len, toFilename(capturedAt));
 
     lastCapturedAt = capturedAt;
