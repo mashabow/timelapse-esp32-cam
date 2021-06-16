@@ -2,16 +2,24 @@
 #include <esp_camera.h>
 #include "network.h"
 
-// 撮影間隔 [s]
-const int INTERVAL = 10 * 60;
+// 撮影間隔 [ms]
+const int INTERVAL = 10 * 60 * 1000;
 // カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [s]
 const int CAMERA_WAIT = 20;
 
-// 最後に撮影・送信に成功した際の、撮影時刻の Unix time [s]
+// 最後に撮影・送信に成功した際の、撮影時刻の Unix time [ms]
 // deep sleep しても値は保持される
-RTC_DATA_ATTR time_t lastCapturedAt = 0;
+RTC_DATA_ATTR long long lastCapturedAt = 0;
 
 const int LED_BUILTIN = 4;
+
+// 現在の Unix time をミリ秒単位で返す
+long long getCurrentMSec()
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec * 1000LL + tv.tv_usec / 1000LL;
+}
 
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
@@ -25,7 +33,7 @@ void deepSleep()
   Serial.println("Enter deep sleep mode.");
   // WiFi 接続や送信処理などにかかる時間と、RTC の誤差を吸収するための余裕時間
   const int margin = 15; // [s]
-  ESP.deepSleep((INTERVAL - CAMERA_WAIT - margin) * 1000 * 1000);
+  ESP.deepSleep((INTERVAL - CAMERA_WAIT * 1000 - margin * 1000) * 1000);
   delay(1000); // deep sleep が始まるまで待つ
 }
 
@@ -81,15 +89,15 @@ void setupCamera()
   Serial.println("Initialized.");
 }
 
-// 撮影間隔がちょうど INTERVAL [s] になるように、delay を挟んで画像を撮影する
-const camera_fb_t *captureImage(const time_t lastCapturedAt)
+// 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟んで画像を撮影する
+const camera_fb_t *captureImage(const long long lastCapturedAt)
 {
   if (lastCapturedAt)
   {
     // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
-    const int wait = INTERVAL - (time(NULL) - lastCapturedAt) % INTERVAL;
-    Serial.println("Waiting until the next capture time... (" + String(wait) + " seconds)");
-    delay(wait * 1000);
+    const int wait = INTERVAL - (getCurrentMSec() - lastCapturedAt) % INTERVAL;
+    Serial.println("Waiting until the next capture time... (" + String(wait) + " ms)");
+    delay(wait);
   }
 
   const auto image = esp_camera_fb_get();
