@@ -4,8 +4,8 @@
 
 // 撮影間隔 [ms]
 const int INTERVAL = 10 * 60 * 1000;
-// カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [s]
-const int CAMERA_WAIT = 20;
+// カメラ起動時後、ホワイトバランスが安定するまでに待つ時間 [ms]
+const int CAMERA_WAIT = 20 * 1000;
 
 // 最後に撮影・送信に成功した際の、撮影時刻の Unix time [ms]
 // deep sleep しても値は保持される
@@ -32,8 +32,8 @@ void deepSleep()
 
   Serial.println("Enter deep sleep mode.");
   // WiFi 接続や送信処理などにかかる時間と、RTC の誤差を吸収するための余裕時間
-  const int margin = 15; // [s]
-  ESP.deepSleep((INTERVAL - CAMERA_WAIT * 1000 - margin * 1000) * 1000);
+  const int margin = 15 * 1000; // [ms]
+  ESP.deepSleep((INTERVAL - CAMERA_WAIT - margin) * 1000);
   delay(1000); // deep sleep が始まるまで待つ
 }
 
@@ -84,7 +84,7 @@ void setupCamera()
   sensor->set_dcw(sensor, 0);
 
   // ホワイトバランスが安定するまで待つ
-  delay(CAMERA_WAIT * 1000);
+  delay(CAMERA_WAIT);
 
   Serial.println("Initialized.");
 }
