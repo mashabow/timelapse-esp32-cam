@@ -21,6 +21,18 @@ long long getCurrentMSec()
   return tv.tv_sec * 1000LL + tv.tv_usec / 1000LL;
 }
 
+// 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟む
+void waitUntilNextCaptureTime(const long long lastCapturedAt)
+{
+  if (!lastCapturedAt)
+    return;
+
+  // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
+  const int wait = INTERVAL - (getCurrentMSec() - lastCapturedAt) % INTERVAL;
+  Serial.println("Waiting until the next capture time... (" + String(wait) + " ms)");
+  delay(wait);
+}
+
 // deep sleep して終了。wake 時には setup から始まる
 void deepSleep()
 {
@@ -89,27 +101,12 @@ void setupCamera()
   Serial.println("Initialized.");
 }
 
-// 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟んで画像を撮影する
-const camera_fb_t *captureImage(const long long lastCapturedAt)
+// 画像を撮影する
+const camera_fb_t *captureImage()
 {
-  if (lastCapturedAt)
-  {
-    // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
-    const int wait = INTERVAL - (getCurrentMSec() - lastCapturedAt) % INTERVAL;
-    Serial.println("Waiting until the next capture time... (" + String(wait) + " ms)");
-    delay(wait);
-  }
-
   const auto image = esp_camera_fb_get();
   Serial.println("Captured! (" + String(image->len) + " bytes)");
   return image;
-}
-
-// 撮影時刻を Unix time [ms] で返す
-const long long getCapturedAt(const camera_fb_t *image)
-{
-  const auto deltaMSec = millis() - (image->timestamp.tv_sec * 1000LL + image->timestamp.tv_usec / 1000LL);
-  return getCurrentMSec() - deltaMSec;
 }
 
 // 2021-05-29T13-16-07.jpeg のような形式のファイル名を返す
@@ -133,8 +130,9 @@ void setup()
     syncTime();
     setupCamera();
 
-    const auto image = captureImage(lastCapturedAt);
-    const auto capturedAt = getCapturedAt(image);
+    waitUntilNextTime(lastCapturedAt);
+    const auto capturedAt = getCurrentMSec();
+    const auto image = captureImage();
     sendImage(image->buf, image->len, toFilename(capturedAt));
 
     lastCapturedAt = capturedAt;
