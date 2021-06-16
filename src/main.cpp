@@ -13,19 +13,14 @@ RTC_DATA_ATTR long long lastCapturedAt = 0;
 
 const int LED_BUILTIN = 4;
 
-// 現在の Unix time をミリ秒単位で返す
-const long long getCurrentMSec()
-{
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec * 1000LL + tv.tv_usec / 1000LL;
-}
-
 // 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟む
 // 戻り値は今回の撮影時刻
 const long long waitUntilNextCaptureTime(const long long lastCapturedAt)
 {
-  const auto now = getCurrentMSec();
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  const auto now = tv.tv_sec * 1000LL + tv.tv_usec / 1000LL; // 現在の Unix time [ms]
+
   if (!lastCapturedAt)
     return now; // 初回起動時は待ち時間なし
 
