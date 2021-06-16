@@ -14,7 +14,7 @@ RTC_DATA_ATTR long long lastCapturedAt = 0;
 const int LED_BUILTIN = 4;
 
 // 現在の Unix time をミリ秒単位で返す
-long long getCurrentMSec()
+const long long getCurrentMSec()
 {
   struct timeval tv;
   gettimeofday(&tv, NULL);
@@ -22,15 +22,19 @@ long long getCurrentMSec()
 }
 
 // 撮影間隔がちょうど INTERVAL [ms] になるように、delay を挟む
-void waitUntilNextCaptureTime(const long long lastCapturedAt)
+// 戻り値は今回の撮影時刻
+const long long waitUntilNextCaptureTime(const long long lastCapturedAt)
 {
+  const auto now = getCurrentMSec();
   if (!lastCapturedAt)
-    return;
+    return now; // 初回起動時は待ち時間なし
 
   // 前回の撮影・送信に失敗していた場合も、撮影間隔が INTERVAL の倍数になるようにする
-  const int wait = INTERVAL - (getCurrentMSec() - lastCapturedAt) % INTERVAL;
+  const auto nextCapturedAt = lastCapturedAt + ((now - lastCapturedAt) / INTERVAL + 1) * INTERVAL;
+  const int wait = nextCapturedAt - now;
   Serial.println("Waiting until the next capture time... (" + String(wait) + " ms)");
   delay(wait);
+  return nextCapturedAt;
 }
 
 // deep sleep して終了。wake 時には setup から始まる
@@ -130,8 +134,7 @@ void setup()
     syncTime();
     setupCamera();
 
-    waitUntilNextTime(lastCapturedAt);
-    const auto capturedAt = getCurrentMSec();
+    const auto capturedAt = waitUntilNextCaptureTime(lastCapturedAt);
     const auto image = captureImage();
     sendImage(image->buf, image->len, toFilename(capturedAt));
 
