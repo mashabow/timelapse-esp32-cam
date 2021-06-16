@@ -105,18 +105,19 @@ const camera_fb_t *captureImage(const long long lastCapturedAt)
   return image;
 }
 
-// 撮影時刻を Unix time [s] で返す
-const time_t getCapturedAt(const camera_fb_t *image)
+// 撮影時刻を Unix time [ms] で返す
+const long long getCapturedAt(const camera_fb_t *image)
 {
-  const auto deltaSec = millis() / 1000 - image->timestamp.tv_sec;
-  return time(NULL) - deltaSec;
+  const auto deltaMSec = millis() - (image->timestamp.tv_sec * 1000LL + image->timestamp.tv_usec / 1000LL);
+  return getCurrentMSec() - deltaMSec;
 }
 
 // 2021-05-29T13-16-07.jpeg のような形式のファイル名を返す
-const String toFilename(time_t unixTime)
+const String toFilename(long long unixTimeMSec)
 {
+  const time_t unixTimeSec = unixTimeMSec / 1000;
   char buffer[32];
-  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S.jpeg", localtime(&unixTime));
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H-%M-%S.jpeg", localtime(&unixTimeSec));
   return String(buffer);
 }
 
